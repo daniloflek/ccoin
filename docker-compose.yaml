@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:13
+    container_name: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - mynetwork
+
+  websocket:
+    build:
+      context: ./ # Update with the actual path
+      dockerfile: Dockerfile.websocket # Change to the actual name if different
+    container_name: websocket-app
+    ports:
+      - "8765:8765"
+    networks:
+      - mynetwork
+
+  app:
+    build: .
+    container_name: nest-app
+    environment:
+      HOST: db
+      DATABASE_PORT: 5432
+      COIN_IDS: 'BTC;ETH;DOGE;SOL'
+      BASE_URL: 'https://rest.coinapi.io'
+      API_KEY: '<APIKEY>'
+      SOCKET_URL: 'ws://websocket:8765'
+      DB_USER: 'postgres'
+      PASSWORD: 'postgres'
+      DB_NAME: 'postgres'
+      EXCHANGE_ID: 'BITSTAMP'
+      PERIOD: '1DAY'
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+      - websocket
+    networks:
+      - mynetwork
+
+networks:
+  mynetwork:
+    driver: bridge
+
+volumes:
+  postgres_data:
