@@ -39,7 +39,7 @@ export class HistoryService implements OnModuleInit {
     }
   }
 
-  @Cron(CronExpression.EVERY_10_MINUTES)
+  @Cron(CronExpression.EVERY_10_SECONDS)
   public async getByCron() {
     const mappedDates = await this.getLastDates();
     for (const id of this.configService.get('COIN_IDS').split(';')) {
@@ -53,8 +53,8 @@ export class HistoryService implements OnModuleInit {
     const results = await this.coinRepository
       .createQueryBuilder('coin')
       .select('symbol')
-      .addSelect('MIN(coin.timePeriodStart)', 'lastStartDate')
-      .addSelect('MIN(coin.timePeriodEnd)', 'lastEndDate')
+      .addSelect('MAX(coin.timePeriodStart)', 'lastStartDate')
+      .addSelect('MAX(coin.timePeriodEnd)', 'lastEndDate')
       .groupBy('symbol')
       .getRawMany();
 
@@ -74,7 +74,7 @@ export class HistoryService implements OnModuleInit {
     endDate?: Date,
   ): Promise<void> {
     const symbol = `${this.configService.get('EXCHANGE_ID')}_SPOT_${id}_USD`;
-    if (endDate && compareDatesByDay(endDate, new Date()) !== 1) {
+    if (endDate && compareDatesByDay(endDate, new Date()) !== -1) {
       this.logger.log(`${endDate}, skippingAction, because it is to early`);
       return;
     }

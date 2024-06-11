@@ -15,7 +15,6 @@ import { CoinSubscriber } from './coin/entities/sybscribers/coin.subscriber';
     }),
     TypeOrmModule.forRootAsync({
       useFactory: (cs: ConfigService) => {
-        console.log(cs.get('HOST'));
         return {
           type: 'postgres',
           host: cs.get('HOST'),
